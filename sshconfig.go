@@ -48,7 +48,7 @@ func (s *Section) clear() {
 	s.IdentityFile = ""
 }
 
-func (s *Section) getFull(name string, def Section) (host string, port int, user, keyfile string) {
+func (s *Section) getFull(def Section) (host string, port int, user, keyfile string) {
 	if len(s.Hostname) > 0 {
 		host = s.Hostname
 	} else if len(def.Hostname) > 0 {
@@ -82,11 +82,11 @@ func getSshEntry(name string) (host string, port int, user, keyfile string) {
 	}
 
 	if s, ok := HostInfo[name]; ok {
-		return s.getFull(name, def)
+		return s.getFull(def)
 	}
 	for h, s := range HostInfo {
 		if ok, err := path.Match(h, name); ok && err == nil {
-			return s.getFull(name, def)
+			return s.getFull(def)
 		}
 	}
 	return def.Hostname, def.Port, def.User, def.IdentityFile

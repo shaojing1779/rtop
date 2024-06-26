@@ -31,7 +31,6 @@ import (
 	"crypto/x509"
 	"encoding/pem"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"net"
 	"os"
@@ -41,12 +40,12 @@ import (
 
 	"golang.org/x/crypto/ssh"
 	"golang.org/x/crypto/ssh/agent"
-	"golang.org/x/crypto/ssh/terminal"
+	"golang.org/x/term"
 )
 
 func getpass(prompt string) (pass string, err error) {
 
-	tstate, err := terminal.GetState(0)
+	tstate, err := term.GetState(0)
 	if err != nil {
 		return
 	}
@@ -59,7 +58,7 @@ func getpass(prompt string) (pass string, err error) {
 			quit = true
 			break
 		}
-		terminal.Restore(0, tstate)
+		term.Restore(0, tstate)
 		if quit {
 			fmt.Println()
 			os.Exit(2)
@@ -74,7 +73,7 @@ func getpass(prompt string) (pass string, err error) {
 	f.Write([]byte(prompt))
 	f.Flush()
 
-	passbytes, err := terminal.ReadPassword(0)
+	passbytes, err := term.ReadPassword(0)
 	pass = string(passbytes)
 
 	f.Write([]byte("\n"))
@@ -115,7 +114,7 @@ func addKeyAuth(auths []ssh.AuthMethod, keypath string) []ssh.AuthMethod {
 	keypath = expandPath(keypath)
 
 	// read the file
-	pemBytes, err := ioutil.ReadFile(keypath)
+	pemBytes, err := os.ReadFile(keypath)
 	if err != nil {
 		log.Print(err)
 		os.Exit(1)
@@ -173,7 +172,7 @@ func getAgentAuth() (auth ssh.AuthMethod, ok bool) {
 }
 
 func addPasswordAuth(user, addr string, auths []ssh.AuthMethod) []ssh.AuthMethod {
-	if terminal.IsTerminal(0) == false {
+	if !term.IsTerminal(0) {
 		return auths
 	}
 	host := addr
